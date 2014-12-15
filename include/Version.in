@@ -1,0 +1,11 @@
+
+#ifndef VERSION_IN
+#define VERSION_IN
+
+#define PH_MAJOR_VERSION ("1")
+
+#define PH_MINOR_VERSION ("0")
+
+#define PH_BUILD ("1")
+
+#endif //VERSION_IN
