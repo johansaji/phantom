@@ -1,10 +1,19 @@
 #include <Version.in>
 
+/*-- System Includes --*/
 #include <stdio.h>
 #include <unistd.h>
-#include <OptConst.h>
-#include "ErrorCodes.h"
+#include <signal.h>
 
+/*-- User Includes --*/
+#include <OptConst.h>
+#include <mongoose.h>
+#include "ErrorCodes.h"
+#include "HTTPServer.h"
+
+/*
+ * print_version() 
+ */
 void print_version()
 {
   printf("phantom %s.%s.%s\n", PH_MAJOR_VERSION, PH_MINOR_VERSION, PH_BUILD);
@@ -30,10 +39,17 @@ int process_cmdline(int argc, char **argv)
   return PH_SUCCESS;
 }
 
+/*
+ * Signal handler for propper exit
+ */
+
 
 int main(int argc, char** argv)
 {
   
   process_cmdline(argc, argv);
+  /* start the server */
+  HTTPServer::getInstance()->start();
+  HTTPServer::getInstance()->run();
   return 0;
 }
