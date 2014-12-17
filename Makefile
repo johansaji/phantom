@@ -8,7 +8,8 @@ LIBS=-L./ -lmongoose
 
 
 OBJS = $(OBJ_DIR)/ServerMain.o \
-       $(OBJ_DIR)/HTTPServer.o
+       $(OBJ_DIR)/HTTPServer.o \
+       $(OBJ_DIR)/HTTPRequest.o
 
 
 include make.conf
@@ -21,7 +22,7 @@ all: ${APP}
 
 $(OBJ_DIR)/%.o :$(SRC_DIR)/%.cpp
 	@echo "[cc] $<"
-	@$(CC) -o $@ -c $< $(CPPFLAGS)
+	@$(CC) -o $@ -c $< $(CPPFLAGS) $(CCFLAGS)
 
 $(APP): $(OBJ_DIR) ${OBJS}
 	@echo "Linking $@"

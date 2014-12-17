@@ -13,14 +13,18 @@ class HTTPServer{
     ServerResult start();
     ServerResult run();
     ServerResult stop();
+    pthread_t getThread();
+    
     
   private:
     HTTPServer();
     static int httpServerMsgHandler(struct mg_connection *, enum mg_event);
+    static void *serverThread(void *);
     static HTTPServer *m_instance;
 
-    bool m_serverStarted;
     struct mg_server *m_server;
+    bool m_serverStarted;
+    pthread_t thread;
 };
 
 #endif //HTTPSERVER_H

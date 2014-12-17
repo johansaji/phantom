@@ -1,7 +1,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <mongoose.h>
+#include <pthread.h>
 #include "HTTPServer.h"
 
 HTTPServer* HTTPServer::m_instance;
@@ -28,27 +30,82 @@ ServerResult HTTPServer::start()
   m_server = mg_create_server(NULL, HTTPServer::httpServerMsgHandler);
   mg_set_option(m_server, "listening_port", "8080");
   m_serverStarted = true;
-  printf("Server started running at %s", mg_get_option(m_server, "listening_port"));
+  printf("Server started running at %s\n", mg_get_option(m_server, "listening_port"));
   return HS_SUCCESS;
 }
 
 ServerResult HTTPServer::run()
 {
-  while (m_serverStarted){
-    mg_poll_server(m_server, 1000);
+  int ret;
+  pthread_attr_t threadAttr;
+  // initialize thraed attribute
+  ret = pthread_attr_init(&threadAttr);
+  if (ret != 0){
+    printf("Init Failed.\n");
+    return HS_FAIL;
+  } 
+  // create a new thread
+  ret = pthread_create(&thread, &threadAttr, HTTPServer::serverThread, (void *)this);
+  if (ret != 0){
+    printf("Thread Create Failed.\n");
+    return HS_FAIL;
   }
+  // destroy created thread
+  ret = pthread_attr_destroy(&threadAttr);
+  if (ret != 0){
+    printf("Unable to destroy the attr\n");
+    return HS_FAIL;
+  }
+  return HS_SUCCESS;
 }
+
 ServerResult HTTPServer::stop()
 {
   if (!m_serverStarted)
     return HS_SUCCESS;
 
-  mg_destroy_server(&m_server);
   m_serverStarted = false;
   return HS_SUCCESS;
 }
 
+pthread_t HTTPServer::getThread()
+{
+  return thread;
+}
+
+void *HTTPServer::serverThread(void *data)
+{
+  HTTPServer *server = (HTTPServer *) data;
+  while (server->m_serverStarted){
+    mg_poll_server(server->m_server, 1000);
+  }
+  mg_destroy_server(&server->m_server);
+  return NULL;
+}
+
 int HTTPServer::httpServerMsgHandler(struct mg_connection *connection, enum mg_event event)
 {
-  printf("Message Handler\n");
+  switch(event){
+  case MG_AUTH:
+    printf("AUTH\n");
+    printf("url -> %s\n", connection->uri); 
+    return MG_TRUE;
+  case MG_REQUEST:
+    printf("REQU\n");
+    printf("url -> %s\n", connection->uri); 
+    //while(1){sleep(10); }
+    return MG_TRUE;
+  case MG_POLL:
+    printf("POLL\n");
+    printf("url -> %s\n", connection->uri); 
+    return MG_FALSE;
+  case MG_CLOSE:
+    printf("CLOSE\n");
+    printf("url -> %s\n", connection->uri); 
+    return MG_TRUE;
+  default:
+    printf("DEF %d\n", event);
+    printf("Handler url -> %s\n", connection->uri); 
+    return MG_FALSE;
+  }
 }

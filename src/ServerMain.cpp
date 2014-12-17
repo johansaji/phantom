@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <pthread.h>
 
 /*-- User Includes --*/
 #include <OptConst.h>
@@ -14,7 +16,7 @@
 /*
  * print_version() 
  */
-void print_version()
+void printVersion()
 {
   printf("phantom %s.%s.%s\n", PH_MAJOR_VERSION, PH_MINOR_VERSION, PH_BUILD);
   printf("Copyright (C) 2015 Blue Fire OS.\n");
@@ -22,7 +24,7 @@ void print_version()
   printf("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
 
-int process_cmdline(int argc, char **argv)
+int processCmdline(int argc, char **argv)
 {
   int option = 0;
   int option_id = 0;
@@ -30,7 +32,7 @@ int process_cmdline(int argc, char **argv)
                               long_options, &option_id))){
     switch(option){
     case 'v':
-      print_version();
+      printVersion();
       break;
     case '?':
       printf("unknown option\n");
@@ -42,14 +44,30 @@ int process_cmdline(int argc, char **argv)
 /*
  * Signal handler for propper exit
  */
-
+void signalHandler(int sigNum)
+{
+  printf("Got signal %d ...\n", sigNum);
+  switch(sigNum){
+  case SIGSEGV:
+    printf("Got segmentation fault server...\n");
+    HTTPServer::getInstance()->stop();
+    exit(1);
+  case SIGINT:
+    printf("Shutting down the server...\n");
+    HTTPServer::getInstance()->stop();
+    //exit(0);
+  }
+}
 
 int main(int argc, char** argv)
 {
-  
-  process_cmdline(argc, argv);
+  signal(SIGSEGV, signalHandler);
+  signal(SIGINT, signalHandler);
+  processCmdline(argc, argv);
   /* start the server */
   HTTPServer::getInstance()->start();
   HTTPServer::getInstance()->run();
+  pthread_join(HTTPServer::getInstance()->getThread(), NULL);
+  
   return 0;
 }
