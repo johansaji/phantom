@@ -2,9 +2,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <mongoose.h>
 #include <pthread.h>
+
 #include "HTTPServer.h"
+#include "HTTPRequest.h"
+
+#define HTTP_PORT "8090"
 
 HTTPServer* HTTPServer::m_instance;
 
@@ -28,7 +33,7 @@ ServerResult HTTPServer::start()
     return HS_RUNNING;
   
   m_server = mg_create_server(NULL, HTTPServer::httpServerMsgHandler);
-  mg_set_option(m_server, "listening_port", "8080");
+  mg_set_option(m_server, "listening_port", HTTP_PORT);
   m_serverStarted = true;
   printf("Server started running at %s\n", mg_get_option(m_server, "listening_port"));
   return HS_SUCCESS;
@@ -85,23 +90,35 @@ void *HTTPServer::serverThread(void *data)
 
 int HTTPServer::httpServerMsgHandler(struct mg_connection *connection, enum mg_event event)
 {
+  static int count = 0;
   switch(event){
   case MG_AUTH:
-    printf("AUTH\n");
-    printf("url -> %s\n", connection->uri); 
+    /*Do the authentication here*/ 
     return MG_TRUE;
   case MG_REQUEST:
-    printf("REQU\n");
-    printf("url -> %s\n", connection->uri); 
-    //while(1){sleep(10); }
-    return MG_TRUE;
+  {
+    /*Process the request here */
+    int *temp = (int *)malloc(sizeof(int));
+    printf("url -> %s\n", connection->uri);
+    count++;
+    *temp = count;
+    connection->connection_param = temp;
+    printf("No = %p\n", (int *)(connection->connection_param));
+    HTTPRequest *request = new HTTPRequest(connection);
+    if (request->isExitRequest()){
+      HTTPServer::getInstance()->stop();
+    }
+    //getchar();
+    return MG_MORE;
+  }
   case MG_POLL:
-    printf("POLL\n");
-    printf("url -> %s\n", connection->uri); 
+    printf("POLL  ");
+    printf("Connection Number = %d \n", (connection->connection_param != NULL)? *(int *)(connection->connection_param):0);
+    printf("No = %p\n", (int *)(connection->connection_param));
     return MG_FALSE;
   case MG_CLOSE:
     printf("CLOSE\n");
-    printf("url -> %s\n", connection->uri); 
+    free(connection->connection_param);
     return MG_TRUE;
   default:
     printf("DEF %d\n", event);
