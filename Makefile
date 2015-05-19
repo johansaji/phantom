@@ -1,36 +1,44 @@
-
-OBJ_DIR=obj_bin
-SRC_DIR=src
-INC_DIR=./include
-
-INCLUDES=-I$(INC_DIR)
-LIBS=-L./ -lmongoose
+include Makefile.conf
 
 
-OBJS = $(OBJ_DIR)/ServerMain.o \
-       $(OBJ_DIR)/HTTPServer.o \
-       $(OBJ_DIR)/HTTPRequest.o
+SRC_DIR    = ./src
+INC_DIR    = ./include
+LIBRARY    = $(LIB_DIR)/$(LIB_NAME)
 
+SRCS       = Server.cpp
 
-include make.conf
-CPPFLAGS+=$(INCLUDES)
-LDFLAGS+=$(LIBS)
+SOURCES   := $(foreach SRC, $(SRCS), $(SRC_DIR)/$(SRC))
+INCLUDES  := $(wildcard $(INC_DIR)/*.h)
+OBJECTS   := $(SOURCES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
+DIRS      := $(LIB_DIR) $(OBJ_DIR) $(ENV_DIR) $(TEST_DIR)
 
-.PHONY: clean
+################################################################################
 
-all: ${APP}
+all: $(OBJ_DIR) $(LIBRARY)
+	@echo "--- $(LIB_NAME) Build completed ---"
+	@echo "For rebuilding :-  make clean && make"
 
-$(OBJ_DIR)/%.o :$(SRC_DIR)/%.cpp
-	@echo "[cc] $<"
-	@$(CC) -o $@ -c $< $(CPPFLAGS) $(CCFLAGS)
+$(OBJECTS): $(OBJ_DIR)/%.o : $(SRC_DIR)/%.cpp
+	@echo "[CC] $@ ..."
+	@$(CC) -c $^ $(CFLAGS) -I$(INC_DIR) $(INCLUDE) -o $@ 
 
-$(APP): $(OBJ_DIR) ${OBJS}
-	@echo "Linking $@"
-	@$(CC) -o $@ ${OBJS} $(LDFLAGS)
-
-$(OBJ_DIR):
-	mkdir -p $@
+$(DIRS):
+	@echo "Creating $@"
+	mkdir -p $(DIRS)
 
 clean:
-	@echo "Cleaning....."
-	@rm -rf ${APP} $(OBJ_DIR)
+	@echo "[RM] $(OBJECTS) ..."
+	@rm -f $(OBJECTS)
+
+distclean:
+	@echo "[RM] $(DIRS) ..."
+	@rm -rf $(DIRS)
+
+$(LIBRARY): $(OBJECTS)
+	@echo "[LD] $(OBJECTS)"
+	@$(CC) -shared $(OBJECTS) $(LFLAGS) $(LIBS_PATHS) -o $@
+	@ln -s $(LIB_NAME)  $(SOFT_NAME)
+	@mv $(SOFT_NAME) $(LIB_DIR)
+
+tests:
+	make -C test
