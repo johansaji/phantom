@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include <stdint.h>
 //#include "mongoose.h"
 
 typedef enum{
@@ -17,7 +18,9 @@ typedef enum{
 class Server{
   public:  /* Public Methods*/
     static Server* getInstance();
+    static int event_handler(struct mg_connection *, enum mg_event );
     ~Server();
+    void start(uint16_t port);
 
   private: /* Private Methods */
     Server();

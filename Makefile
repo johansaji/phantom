@@ -3,9 +3,10 @@ include Makefile.conf
 
 SRC_DIR    = ./src
 INC_DIR    = ./include
-LIBRARY    = $(LIB_DIR)/$(LIB_NAME)
+APP        = phantom
 
-SRCS       = Server.cpp
+SRCS       = Server.cpp \
+             Main.cpp
 
 SOURCES   := $(foreach SRC, $(SRCS), $(SRC_DIR)/$(SRC))
 INCLUDES  := $(wildcard $(INC_DIR)/*.h)
@@ -14,7 +15,7 @@ DIRS      := $(LIB_DIR) $(OBJ_DIR) $(ENV_DIR) $(TEST_DIR)
 
 ################################################################################
 
-all: $(OBJ_DIR) $(LIBRARY)
+all: $(OBJ_DIR) $(APP)
 	@echo "--- $(LIB_NAME) Build completed ---"
 	@echo "For rebuilding :-  make clean && make"
 
@@ -34,9 +35,9 @@ distclean:
 	@echo "[RM] $(DIRS) ..."
 	@rm -rf $(DIRS)
 
-$(LIBRARY): $(OBJECTS)
+$(APP): $(OBJECTS)
 	@echo "[LD] $(OBJECTS)"
-	@$(CC) -shared $(OBJECTS) $(LFLAGS) $(LIBS_PATHS) -o $@
+	@$(CC) $(OBJECTS) $(LFLAGS) $(LIBS_PATHS) -o $@
 	@ln -s $(LIB_NAME)  $(SOFT_NAME)
 	@mv $(SOFT_NAME) $(LIB_DIR)
 
