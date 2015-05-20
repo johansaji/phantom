@@ -1,0 +1,19 @@
+#ifndef PLOG_H
+#define PLOG_H
+
+#include <kronos.h>
+
+#define MODULE "elixir.phantom"
+
+
+#define PLOG_FATAL(x...)  KRONOS_LOG(KRONOS_FATAL, MODULE, x)
+#define PLOG_ALERT(x...)  KRONOS_LOG(KRONOS_ALERT, MODULE, x)
+#define PLOG_CRIT(x...)   KRONOS_LOG(KRONOS_CRIT, MODULE, x)
+#define PLOG_ERROR(x...)  KRONOS_LOG(KRONOS_ERROR, MODULE, x)
+#define PLOG_WARN(x...)   KRONOS_LOG(KRONOS_WARN, MODULE, x)
+#define PLOG_NOTICE(x...) KRONOS_LOG(KRONOS_NOTICE, MODULE, x)
+#define PLOG_INFO(x...)   KRONOS_LOG(KRONOS_INFO, MODULE, x)
+#define PLOG_DEBUG(x...)  KRONOS_LOG(KRONOS_DEBUG, MODULE, x)
+#define PLOG_TRACE(x...)  KRONOS_LOG(KRONOS_TRACE, MODULE, x)
+
+#endif
