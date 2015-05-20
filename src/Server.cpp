@@ -1,6 +1,7 @@
 
 #include "mongoose.h"
 #include "plog.h"
+#include "kronos.h"
 #include "Server.h"
 
 Server* Server::m_instance = NULL;
