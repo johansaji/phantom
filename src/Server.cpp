@@ -2,6 +2,7 @@
 #include "mongoose.h"
 #include "plog.h"
 #include "kronos.h"
+#include "HTTPHeader.h"
 #include "Server.h"
 
 Server* Server::m_instance = NULL;
@@ -80,15 +81,22 @@ int Server::event_handler(struct mg_connection *conn, enum mg_event ev) {
   PLOG_TRACE("Mongoose event = %d ", ev);
   switch (ev) {
     case MG_AUTH: return MG_TRUE;
-    case MG_REQUEST:
-      mg_printf(conn, "HTTP/1.1 200 OK\r\n"
-                      "Content-Type: video/mp4\r\n");
-        PLOG_DEBUG("*********************************************************");
-      for (int i = 0; i < conn->num_headers; i++){
-        PLOG_DEBUG("  %-15s : %s ", conn->http_headers[i].name, conn->http_headers[i].value);
-      }
-        PLOG_DEBUG("*********************************************************");
+    case MG_REQUEST:{
+      HTTPHeader::PrintHeader((struct_header *)conn->http_headers, conn->num_headers);
+      HTTPHeader::OK200Code(conn);
+      FILE *fp = fopen("./yan.mp4", "r");
+      conn->connection_param = (void *)fp;
       return MG_MORE;
+    }
+    case MG_POLL:
+    {
+      FILE *fp = (FILE *)conn->connection_param;
+      if (fp != NULL){
+        char buff[1024];
+        int n = fread(buff, 1, sizeof(buff), fp);
+        mg_write(conn, buff, n);
+      }
+    }
     default: return MG_FALSE;
   }
   //PLOG_TRACE("Leave");
