@@ -12,6 +12,8 @@ class HTTPHeader{
   public:
     static void PrintHeader(struct_header *headers, int num_header);
     static void OK200Code(struct mg_connection *);
+	static void Error400Code(struct mg_connection * );
+	static void NotFound404Code(struct mg_connection *);
 };
 
 #endif //HTTPHEADER_H
