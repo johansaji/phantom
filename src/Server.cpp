@@ -4,6 +4,7 @@
 #include "mongoose.h"
 #include "plog.h"
 #include "kronos.h"
+#include "Settings.h"
 #include "HTTPHeader.h"
 #include "Server.h"
 
@@ -22,6 +23,7 @@ Server::Server():
 
 Server::~Server()
 {
+  PLOG_TRACE("Exiting HTTPServer");
 }
 
 Server* Server::getInstance()
@@ -37,9 +39,9 @@ bool Server::stopServer()
   return false;
 }
 
-bool Server::shutdownServer()
+void Server::shutdownServer()
 {
-  return false;
+  m_status = ServerStopped;
 }
 
 ServerStatus Server::getServerStatus()
@@ -47,11 +49,16 @@ ServerStatus Server::getServerStatus()
   return m_status;
 }
 
-void Server::start(uint16_t port)
+void Server::start()
 {
+  char port[6];
   if (m_status != ServerStarted && m_status != ServerRunning){
+    sprintf(port,"%d", Settings::getInstance()->getHTTPPort());
     m_server = mg_create_server(NULL, Server::event_handler);
-    mg_set_option(m_server, "listening_port", "8080");
+    mg_set_option(m_server, "listening_port", port);
+    m_status = ServerStarted;
+    PLOG_INFO("Server started running at %s", mg_get_option(m_server, "listening_port"));
+    
     startPollThread();
   }
 
@@ -59,7 +66,7 @@ void Server::start(uint16_t port)
 
 bool Server::isServerRunning()
 {
-  return true;
+  return (m_status == ServerStarted)? true : false;
 }
 
 void Server::startPollThread()
@@ -79,13 +86,13 @@ void *Server::serverPollThread(void *serverctx)
     mg_poll_server(server, 1000);   // Infinite loop, Ctrl-C to stop
     PLOG_TRACE("Server hearbeat");
   }
-
+  PLOG_ERROR("Exiting");
   return NULL;
 }
 
 int Server::event_handler(struct mg_connection *conn, enum mg_event ev) {
   //PLOG_TRACE("Enter");
-  PLOG_ALERT("Mongoose event = %d ", ev);
+  PLOG_TRACE("Mongoose event = %d ", ev);
   switch (ev) {
     case MG_AUTH: return MG_TRUE;
     case MG_REQUEST:
@@ -107,7 +114,6 @@ int Server::event_handler(struct mg_connection *conn, enum mg_event ev) {
     }
     case MG_POLL:
     {
-      PLOG_ALERT("inside POLL %x %x %s",conn, conn->connection_param ,conn->uri);
       RequestParms *connection_params = (RequestParms *)conn->connection_param;
       if(connection_params){
         if(!connection_params->validUrl){

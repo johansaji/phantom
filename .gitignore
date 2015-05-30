@@ -1,1 +1,5 @@
 *.o
+phantom
+plog.txt
+*.mp4
+build/

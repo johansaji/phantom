@@ -8,8 +8,7 @@
 typedef enum{
   ServerStopped = 0,
   ServerStarted,
-  ServerRunning,
-  ServerStopping
+  ServerRunning
 }ServerStatus;
 
 /**
@@ -20,14 +19,14 @@ class Server{
   public:  /* Public Methods*/
     static Server* getInstance();
     static int event_handler(struct mg_connection *, enum mg_event );
+    void shutdownServer();
     static void *serverPollThread (void *);
     ~Server();
-    void start(uint16_t port);
+    void start();
 
   private: /* Private Methods */
     Server();
     bool stopServer();
-    bool shutdownServer();
     ServerStatus getServerStatus();
     bool isServerRunning();
     void startPollThread();

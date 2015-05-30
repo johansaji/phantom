@@ -4,7 +4,8 @@
 #include <mongoose.h>
 #include "HTTPRequest.h"
 
-#define EXIT_URL "/server/exit"
+#define VALID_URL "/phantom/"
+#define EXIT_URL "/phantom/exit"
 
 
 HTTPRequest::HTTPRequest():
@@ -17,7 +18,12 @@ HTTPRequest::HTTPRequest(struct mg_connection *connection):
 {
 }
 
-int HTTPRequest::isExitRequest()
+bool HTTPRequest::isExitRequest(void)
 {
-  return !strcmp(m_connection->uri, EXIT_URL);
+  return (!strcmp(m_connection->uri, EXIT_URL)) ? true : false ;
+}
+
+bool HTTPRequest::isUrlValid(void)
+{
+  return strstr(m_connection->uri, VALID_URL) ? true : false;
 }

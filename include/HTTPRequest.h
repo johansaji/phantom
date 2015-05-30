@@ -5,7 +5,8 @@ class HTTPRequest{
   public:
     HTTPRequest();
     HTTPRequest(struct mg_connection *);
-    int isExitRequest(void);
+    bool isExitRequest(void);
+	bool isUrlValid(void);
   private:
     struct mg_connection *m_connection;
 };

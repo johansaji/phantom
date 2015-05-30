@@ -29,13 +29,17 @@ HTTPServer* HTTPServer::getInstance()
 
 ServerResult HTTPServer::start()
 {
+  char port[6];
+
   if (m_serverStarted)
     return HS_RUNNING;
   
+  sprintf(port, "%s", Settings::getInstance()->getHTTPPort());
+  
   m_server = mg_create_server(NULL, HTTPServer::httpServerMsgHandler);
-  mg_set_option(m_server, "listening_port", HTTP_PORT);
+  mg_set_option(m_server, "listening_port", port);
   m_serverStarted = true;
-  printf("Server started running at %s\n", mg_get_option(m_server, "listening_port"));
+  PLOG_INFO("Server started running at %s\n", mg_get_option(m_server, "listening_port"));
   return HS_SUCCESS;
 }
 
