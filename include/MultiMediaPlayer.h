@@ -10,6 +10,9 @@ class MultiMediaPlayer{
     enum SupportsType { IsNotSupported, IsSupported, MayBeSupported };
 
   public:
+    MediaPlayer();
+    ~MediaPLayer();
+    
     void load(char *url);
     void play();
     void pause();
